@@ -2,7 +2,7 @@ FROM rustlang/rust:nightly-slim as builder
 
 RUN USER=root cargo new --bin do-apps-rust-actix
 
-WORKDIR /do-apps-rust
+WORKDIR /do-apps-rust-actix
 
 COPY ./Cargo.toml ./Cargo.toml
 RUN cargo build --release
@@ -20,7 +20,7 @@ FROM debian:buster-slim as runtime
 WORKDIR /bin
 
 # Copy from builder and rename to 'server'
-COPY --from=builder /do-apps-rust/target/release/do-apps-rust ./server
+COPY --from=builder /do-apps-rust-actix/target/release/do-apps-rust-actix ./server
 
 RUN apt-get update \
     && apt-get install -y ca-certificates tzdata \
