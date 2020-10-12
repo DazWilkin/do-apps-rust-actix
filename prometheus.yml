@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Self
+  - job_name: "prometheus-server"
+    static_configs:
+      - targets:
+          - "localhost:9090"
+
+  # Rust HTTP server
+  - job_name: "do-apps-rust-actix"
+    static_configs:
+      - targets:
+          - "do-apps-rust-actix:8080"
+
+  # cAdvisor exports metrics for *all* containers running on this host
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - "cadvisor:8080"

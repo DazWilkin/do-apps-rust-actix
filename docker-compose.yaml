@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  do-apps-rust:
+    depends_on:
+      - prometheus
+    image: do-apps-rust-actix:${TAG}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      PORT: "8080"
+    expose:
+      - "8080"
+    ports:
+      - 8080:8080
+
+  cadvisor:
+    restart: always
+    image: gcr.io/google-containers/cadvisor@sha256:16bc6858dc5b7063c7d89153ad6544370eb79cb27a1b8d571f31b98673f7a324 # v0.36.0
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/snap/docker/current:/var/lib/docker:ro" #- "/var/lib/docker/:/var/lib/docker:ro"
+    devices:
+      - "/dev/kmsg:/dev/kmsg"
+    expose:
+      - "8080"
+    ports:
+      - 8086:8080
+
+  prometheus:
+    restart: always
+    image: prom/prometheus@sha256:f3ada803723ccbc443ebea19f7ab24d3323def496e222134bf9ed54ae5b787bd # v2.21.0
+    volumes:
+      - "${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml"
+    expose:
+      - "9090" # HTTP Endpoint
+    ports:
+      - "9090:9090"
