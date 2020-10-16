@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+use std::env;
+use std::net::SocketAddr;
+
 use actix_web::{get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 
-use std::env;
-use std::net::{SocketAddr, ToSocketAddrs};
+use actix_web_prom::PrometheusMetrics;
 
 #[get("/")]
 async fn root() -> impl Responder {
@@ -40,12 +43,17 @@ async fn main() -> std::io::Result<()> {
         Err(_) => 8080,
     };
 
-    HttpServer::new(|| {
+    let labels = HashMap::new();
+    let prometheus = PrometheusMetrics::new("api", Some("/metrics"), Some(labels));
+
+    HttpServer::new(move || {
         App::new()
             .service(root)
             .service(envs)
             .service(headers)
+            .service(healthz)
             .route("/hey", web::get().to(manual))
+            .wrap(prometheus.clone())
     })
     .bind(SocketAddr::from(([0, 0, 0, 0], port)))?
     .run()
